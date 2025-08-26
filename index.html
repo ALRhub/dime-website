@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
   <meta charset="utf-8">
   <meta name="description"
@@ -94,15 +94,15 @@
           <div class="column has-text-centered">
             <div class="publication-links">
               <!-- PDF Link. -->
-<!--              <span class="link-block">-->
-<!--                <a href="https://openreview.net/pdf?id=9ZkUFSwlUH"-->
-<!--                   class="external-link button is-normal is-rounded is-dark">-->
-<!--                  <span class="icon">-->
-<!--                      <i class="fas fa-file-pdf"></i>-->
-<!--                  </span>-->
-<!--                  <span>Paper</span>-->
-<!--                </a>-->
-<!--              </span>-->
+              <span class="link-block">
+                <a href="https://openreview.net/forum?id=Aw6dBR7Vxj"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
               <span class="link-block">
                 <a href="https://arxiv.org/pdf/2502.02316"
                    class="external-link button is-normal is-rounded is-dark">
@@ -124,6 +124,9 @@
               </span>
             </div>
               This paper was published at <a href="https://icml.cc/Conferences/2025"> ICML 2025 </a>.
+              The code can be found in the corresponding github repository together with all learning curves for replotting.
+              We have run DIME additionally on all environments of the DMC suite and have put the results alongside the ones from the paper in the github repository.
+              Please reach out to us if you have questions or if you are interested in collaborations.
           </div>
         </div>
       </div>
@@ -167,19 +170,90 @@
 <section class="section">
   <div class="container is-max-desktop">
 
-  <h2 class="title is-3">Content will be updated soon. Stay Tuned!</h2>
+  <h2 class="title is-3">Maximum Entropy Reinforcement Learning with Diffusion Policies</h2>
+      DIME is a reinforcement learning algorithm that allows training diffusion policies in the maximum entropy RL framework.
+      Notably, DIME allows controlling the exploration-exploitation trade-off of diffusion policies by adjusting the entropy-scaling parameter $\alpha$.
+      The resulting behavior for the generative process can be seen in the following Figure.
+      <img src="./static/images/alpha_effect.png">
+      Figure 1: <strong> The effect of the reward scaling parameter $\alpha$ </strong>. The figures in (a)-(b) show
+      diffusion processes for different $\alpha$ values starting at a prior distribution $\mathcal{N}(0,I)$ and going
+      backward in time to approximate the target distribution $\exp{\left(Q^\pi/\alpha\right)}/Z^\pi$.
+      Small values for $\alpha$ (a) lead to concentrated target distributions with less noise in the diffusion
+      trajectories especially at the last time steps. The higher $\alpha$ becomes (b) and (c), the more the target
+      distribution is smoothed and the distribution of the samples at the last time steps becomes more noisy.
+      Therefore, the parameter $\alpha$ directly controls the exploration by enforcing noisier samples the higher $\alpha$ becomes.
+
+    <br>
+    <br>
+    <br>
+    Optimizing the maximum entropy RL objective is difficult because the marginal likelihood is difficult to compute for diffusion policies.
+    DIME's key contribution is a lower-bound to this maximum entropy objective that can be evaluated and optimized efficiently.
+    The resulting lower-bound is the ratio between the backward and forward diffusion process, where the forward process starts at the target distribution
+      $\vec{\pi}_0(a^0|s)=\frac{\exp{Q_\phi(s,a^0)}}{Z_\phi(s)}$, thereby including the Q-function in the policy update loss function.
+      Please find the exact equations in the paper.
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+  <h2 class="title is-3"> Entropy Scaling Benefits and Improved Performance over a Gaussian Policy</h2>
+
+    <img src="./static/images/ablation_alpha_gauss_diffusion.png">
+    Figure 2: <strong> Entropy Scaling Sensitivity (a)-(b) </strong>. The $\alpha$ parameter controls the
+      exploration-exploitation trade-off. (a) shows the learning curves for varying values on DMC's dog-run task.
+      Too high $\alpha$ values ($\alpha=0.1$) do not incentivize learning whereas too small $\alpha$ values ($\alpha\leq10^{-5}$) converge to suboptimal behavior.
+      (b) shows the aggregated end performance for each learning curve in (a).
+      For increasing $\alpha$ values, the end performance increases until it reaches an optimum at $\alpha=10^{-3}$ after which the performance starts dropping.
+      <strong> Diffusion Policy Benefit (c) and (d).</strong> We compare DIME to a Gaussian policy with the same implementation details as DIME on the (a) humanoid-run and (b) dog-run tasks.
+      The diffusion-based policy reaches a higher return (a) and converges faster.
   </div>
 </section>
 
 
+<section class="section">
+  <div class="container is-max-desktop">
+  <h2 class="title is-3"> Number of Diffusion Steps and DIME's performance compared to other Diffusion-Based Baselines</h2>
+
+    <img src="./static/images/diffusion_steps_gym_envs.png">
+    Figure 3: <strong> Varying the Number of diffusion steps (a)-(b).</strong> The number of diffusion steps might
+      affect the performance and the computation time. (a) shows DIME's learning curves for varying diffusion steps on DMC's humanoid-run task.
+      <em>Two</em> diffusion steps perform badly, whereas <em>four</em> and <em>eight</em> diffusion steps perform similar but still worse than <em>16</em> and <em>32</em> diffusion steps which perform similarly.
+      (b) shows the computation time for 1MIO steps of the corresponding learning curves.
+      The smaller the diffusion steps, the less computation time is required.
+      <strong> Learning Curves on Gym Benchmark Suite (c)-(d).</strong>
+      We compare DIME against various diffusion baselines and CrossQ on the (c) <em>Ant-v3</em> and (d) <em>Humanoid-v3</em> from the Gym suite.
+      While all diffusion-based methods are outperformed by DIME, DIME performs on par with CrossQ on the Ant environment.
+      DIME performs favorably on the high-dimensional <em>Humanoid-v3</em> environment, where it also outperforms CrossQ.
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+  <h2 class="title is-3"> Comparison to SOTA RL Methods on DMC and MYO Suite</h2>
+  DIME is compared against most recent SOTA RL methods on the humanoid and dog environments from DMC and the difficult environments from the MYO Suite.
+  DIME performs favorably on the high-dimensional dog tasks and performs on par against the SOTA Gaussian policy-based method BRO.
+<br>
+      <br>
+    <img src="./static/images/dmc_myo.png">
+    Figure 4: <strong> Training curves on DMC's dog, humanoid tasks, and the hand environments from the MYO Suite.</strong>
+      DIME performs favorably on the high-dimensional dog tasks, where it significantly outperforms all baselines (dog-run)
+      or converges faster to the final performance.
+      On the humanoid tasks, DIME outperforms all diffusion-based baselines, CrossQ and BRO Fast, and performs on par
+      with BRO on the humanoid-stand task and slightly worse on the humanoid-run and humanoid-walk tasks.
+      In the MYO SUITE environments, DIME performs consistently on all tasks, either outperforming the baselines or performing on par.
+  </div>
+</section>
+
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@article{celik2025dime,
-  title={DIME: Diffusion-Based Maximum Entropy Reinforcement Learning},
-  author={Celik, Onur and Li, Zechu and Blessing, Denis and Li, Ge and Palanicek, Daniel and Peters, Jan and Chalvatzaki, Georgia and Neumann, Gerhard},
-  journal={arXiv preprint arXiv:2502.02316},
-  year={2025}
+    <pre><code>@inproceedings{
+celik2025dime,
+title={{DIME}: Diffusion-Based Maximum Entropy Reinforcement Learning},
+author={Onur Celik and Zechu Li and Denis Blessing and Ge Li and Daniel Palenicek and Jan Peters and Georgia Chalvatzaki and Gerhard Neumann},
+booktitle={Forty-second International Conference on Machine Learning},
+year={2025},
+url={https://openreview.net/forum?id=Aw6dBR7Vxj}
 }
 </code></pre>
   </div>
